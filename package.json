@@ -1,0 +1,52 @@
+{
+  "name": "weigh-js",
+  "version": "1.0.0",
+  "description": "A lightweight TypeScript library for estimating memory usage of JavaScript objects.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "memory",
+    "profiler",
+    "typescript",
+    "size",
+    "object",
+    "analyzer",
+    "WeighJS",
+    "weigh"
+  ],
+  "author": "A5800000BD79867",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.4.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/A5800000BD79867/WeighJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/A5800000BD79867/WeighJS/issues"
+  },
+  "homepage": "https://github.com/A5800000BD79867/WeighJS#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}
