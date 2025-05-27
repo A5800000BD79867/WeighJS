@@ -91,16 +91,6 @@ export class TypedArraySizeStrategy implements ISizeStrategy {
 	}
 }
 
-export class WeakCollectionStrategy implements ISizeStrategy {
-	public supports(value: any): boolean {
-		return value instanceof WeakMap || value instanceof WeakSet;
-	}
-
-	public sizeOf(_value: any, _profiler: IProfiler): number {
-		return eMemorySize.REFERENCE;
-	}
-}
-
 export class ArrayBufferStrategy implements ISizeStrategy {
 	public supports(value: any): boolean {
 		return value instanceof ArrayBuffer;
@@ -172,7 +162,6 @@ export class Profiler implements IProfiler {
 			new TypedArraySizeStrategy(),
 			new ArrayBufferStrategy(),
 			new DataViewStrategy(),
-			new WeakCollectionStrategy(),
 			new FunctionSizeStrategy(),
 			new DefaultSizeStrategy(),
 		];
@@ -180,16 +169,14 @@ export class Profiler implements IProfiler {
 
 	public sizeOf(value: any): number {
 		this.visited = new WeakSet();
-		const size = this.computeSize(value);
-		return size;
+		return this.computeSize(value);
 	}
 
 	public computeSize(value: any): number {
 		const strategy = this.strategies.find((s) => s.supports(value));
 		if (!strategy) return 0;
 
-		const size = strategy.sizeOf(value, this);
-		return size;
+		return strategy.sizeOf(value, this);
 	}
 
 	public isVisited(value: any): boolean {

@@ -1,4 +1,5 @@
 # WeighJS - JavaScript Object Memory Scale
+[![npm version](https://img.shields.io/npm/v/weigh-js.svg)](https://www.npmjs.com/package/weigh-js)[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)[![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)](https://nodejs.org/)
 
 A lightweight TypeScript library for estimating memory usage by JavaScript objects.
 >**This will always be an approximate value due to the peculiarities of the JavaScript code execution environment as well as the optimizations applied.**
@@ -64,8 +65,8 @@ console.log(`Memory used: ${Profiler.formatSize(memoryUsage)}`);
 | Float64Array | ✅ |
 | BigInt64Array | ✅ |
 | BigUint64Array | ✅ |
-| Weak Map | ✅ |
-| Weak Set | ✅ |
+| Weak Map | ❌ |
+| Weak Set | ❌ |
 | Weak Ref | ✅ |
 | Array Buffer | ✅ |
 | DataView | ✅ |
