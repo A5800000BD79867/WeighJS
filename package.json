@@ -1,6 +1,6 @@
 {
   "name": "weigh-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A lightweight TypeScript library for estimating memory usage of JavaScript objects.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
