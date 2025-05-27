@@ -2,8 +2,7 @@ import { URL } from "url";
 import { IMemoryReport, IProfiler, ISizeStrategy } from "./types";
 import { eMemorySize, eMemoryUnit } from "./enum";
 
-
-export class DefaultSizeStrategy implements ISizeStrategy {
+class DefaultSizeStrategy implements ISizeStrategy {
 	public supports(_value: any): boolean {
 		return true;
 	}
@@ -19,7 +18,7 @@ export class DefaultSizeStrategy implements ISizeStrategy {
 			case "number": return eMemorySize.NUMBER;
 			case "boolean": return eMemorySize.BOOLEAN;
 			case "bigint": return eMemorySize.BIGINT;
-			case "function": return value.toString().length * eMemorySize.STRING_CHAR;
+			case "function": return eMemorySize.DEFAULT_FUNCTION + value.toString().length * eMemorySize.STRING_CHAR;
 			case "symbol": return value.description ? (value.description.length * eMemorySize.STRING_CHAR) : 0;
 		}
 
@@ -29,13 +28,13 @@ export class DefaultSizeStrategy implements ISizeStrategy {
 		if (Array.isArray(value)) return value.reduce((sum, item) => sum + profiler.computeSize(item), 0);
 
 		if (value instanceof Map) {
-			let size = 0;
-			for (const [key, val] of value) size += profiler.computeSize(key) + profiler.computeSize(val);
+			let size = eMemorySize.DEFAULT_MAP;
+			for (const { 0: key, 1: val } of value) size += profiler.computeSize(key) + profiler.computeSize(val);
 			return size;
 		}
 
 		if (value instanceof Set) {
-			let size = 0;
+			let size = eMemorySize.DEFAULT_SET;
 			for (const item of value) size += profiler.computeSize(item);
 			return size;
 		}
@@ -44,7 +43,7 @@ export class DefaultSizeStrategy implements ISizeStrategy {
 		if (value instanceof Date) return eMemorySize.DATE;
 		if (value instanceof RegExp) return value.toString().length * eMemorySize.STRING_CHAR;
 
-		let size = 0;
+		let size = eMemorySize.DEFAULT_OBJECT;
 
 		for (const key in value) {
 			if (Object.prototype.hasOwnProperty.call(value, key)) {
@@ -63,7 +62,7 @@ export class URLSizeStrategy implements ISizeStrategy {
 	}
 
 	public sizeOf(value: URL, _profiler: IProfiler): number {
-		return value.toString().length * eMemorySize.STRING_CHAR;
+		return eMemorySize.DEFAULT_OBJECT + value.toString().length * eMemorySize.STRING_CHAR;
 	}
 }
 
@@ -118,7 +117,9 @@ export class FunctionSizeStrategy implements ISizeStrategy {
 
 	public sizeOf(fn: Function, profiler: IProfiler): number {
 		const fnWithProps = fn as Function & { [key: string]: any };
-		let size = fn.toString().length * eMemorySize.STRING_CHAR;
+		let size = eMemorySize.DEFAULT_FUNCTION;
+
+		size += fn.toString().length * eMemorySize.STRING_CHAR;
 
 		for (const key in fnWithProps) {
 			if (Object.prototype.hasOwnProperty.call(fnWithProps, key)) {
@@ -127,9 +128,7 @@ export class FunctionSizeStrategy implements ISizeStrategy {
 			}
 		}
 
-		if (fn.prototype && typeof fn.prototype === "object") {
-			size += profiler.computeSize(fn.prototype);
-		}
+		if (fn.prototype && typeof fn.prototype === "object") size += profiler.computeSize(fn.prototype);
 
 		return size;
 	}
@@ -141,7 +140,51 @@ export class WeakRefStrategy implements ISizeStrategy {
 	}
 
 	public sizeOf(_value: any, _profiler: IProfiler): number {
-		return eMemorySize.REFERENCE;
+		return eMemorySize.REFERENCE + eMemorySize.DEFAULT_WEAKREF;
+	}
+}
+
+export class RegExpStrategy implements ISizeStrategy {
+	public supports(value: any): boolean {
+		return value instanceof RegExp;
+	}
+
+	public sizeOf(value: any, profiler: IProfiler): number {
+		let size = eMemorySize.DEFAULT_REGEXP;
+
+		size += value.source.length * eMemorySize.STRING_CHAR;
+		size += value.flags.length * eMemorySize.STRING_CHAR;
+
+		for (const key in value) {
+			if (Object.prototype.hasOwnProperty.call(value, key) && key !== "source" && key !== "flags" && key !== "lastIndex") {
+				size += key.length * eMemorySize.STRING_CHAR;
+				size += profiler.computeSize(value[key]);
+			}
+		}
+
+		size += eMemorySize.NUMBER;
+
+		return size;
+	}
+}
+
+export class ArrayStrategy implements ISizeStrategy {
+	public supports(value: any): boolean {
+		return Array.isArray(value);
+	}
+
+	public sizeOf(value: any, profiler: IProfiler): number {
+		let size = eMemorySize.DEFAULT_ARRAY;
+		for (const item of value) size += profiler.computeSize(item);
+
+		for (const key in value) {
+			if (Object.prototype.hasOwnProperty.call(value, key) && key !== "length") {
+				size += key.length * eMemorySize.STRING_CHAR;
+				size += profiler.computeSize(value[key]);
+			}
+		}
+
+		return size;
 	}
 }
 
@@ -157,6 +200,8 @@ export class Profiler implements IProfiler {
 		} = options ?? {};
 
 		this.strategies = strategies ?? [
+			new ArrayStrategy(),
+			new RegExpStrategy(),
 			new WeakRefStrategy(),
 			new URLSizeStrategy(),
 			new TypedArraySizeStrategy(),

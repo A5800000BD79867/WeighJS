@@ -3,10 +3,18 @@ export const enum eMemorySize {
 	NUMBER = 8,
 	BIGINT = 8,
 	STRING_CHAR = 2,
-	DATE = 8,
+	DATE = 32,
 	REFERENCE = 8,
-	UNDEFINED = 1,
-	NULL = 8,
+	UNDEFINED = 4,
+	NULL = 4,
+
+	DEFAULT_OBJECT = 24,
+	DEFAULT_FUNCTION = 96,
+	DEFAULT_REGEXP = 64,
+	DEFAULT_WEAKREF = 16,
+	DEFAULT_ARRAY = 32,
+	DEFAULT_MAP = 64,
+	DEFAULT_SET = 64
 }
 
 export const enum eMemoryUnit {
